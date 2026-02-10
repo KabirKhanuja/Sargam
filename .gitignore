@@ -27,11 +27,34 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
 /build/
 /coverage/
+
+# Android/Gradle related
+**/.gradle/
+android/.gradle/
+android/local.properties
+
+# Android signing (keep these out of git)
+**/key.properties
+**/*.jks
+**/*.keystore
+
+# iOS/macOS (Xcode/CocoaPods) related
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+macos/Pods/
+macos/Flutter/ephemeral/
+
+# Xcode user-specific files
+**/DerivedData/
+**/*.xcuserstate
+**/xcuserdata/
 
 # Symbolication related
 app.*.symbols
