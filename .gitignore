@@ -66,3 +66,20 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Generated files
+*.g.dart
+*.config.dart
+
+# Env files  
+.env
+.env.*
+!.env.example
+
+# OS files
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# VS Code 
+.vscode/launch.json
