@@ -55,7 +55,12 @@ class RiyazScreen extends ConsumerWidget {
                       const PitchAccuracyLabel(),
                       const Spacer(),
                       _SessionTimers(state: riyaz),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
+                      if (riyaz.micDenied)
+                        const _MicDeniedBanner()
+                      else
+                        const _SourceIndicator(),
+                      const SizedBox(height: 8),
                       _PrimaryAction(
                         isRunning: riyaz.session.isRunning,
                         onStart: controller.start,
@@ -291,6 +296,66 @@ class _TimerBlock extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _SourceIndicator extends ConsumerWidget {
+  const _SourceIndicator();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final source = ref.watch(pitchSourceProvider);
+    if (source == PitchSource.mic) return const SizedBox(height: 0);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.science_outlined,
+            size: 14, color: AppColors.textMuted),
+        const SizedBox(width: 6),
+        Text(
+          'Demo source',
+          style: TextStyle(
+            fontSize: 11,
+            letterSpacing: 1.4,
+            color: AppColors.textMuted,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MicDeniedBanner extends ConsumerWidget {
+  const _MicDeniedBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.offPitch.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.mic_off_rounded,
+              size: 16, color: AppColors.offPitch),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              'Mic denied — using demo source',
+              style: const TextStyle(
+                fontSize: 12,
+                letterSpacing: 0.8,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

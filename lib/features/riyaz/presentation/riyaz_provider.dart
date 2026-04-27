@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../pitch/data/mic_pitch_detector_service.dart';
 import '../../pitch/domain/pitch_model.dart';
 import '../../pitch/presentation/pitch_provider.dart';
 import '../data/session_service.dart';
@@ -11,11 +12,15 @@ class RiyazState {
   final RiyazSession session;
   final bool isStable;
   final double stdDevCents;
+  final bool micDenied;
+  final String? lastError;
 
   const RiyazState({
     required this.session,
     required this.isStable,
     required this.stdDevCents,
+    this.micDenied = false,
+    this.lastError,
   });
 
   factory RiyazState.idle() => RiyazState(
@@ -28,13 +33,20 @@ class RiyazState {
     RiyazSession? session,
     bool? isStable,
     double? stdDevCents,
+    bool? micDenied,
+    Object? lastError = _sentinel,
   }) =>
       RiyazState(
         session: session ?? this.session,
         isStable: isStable ?? this.isStable,
         stdDevCents: stdDevCents ?? this.stdDevCents,
+        micDenied: micDenied ?? this.micDenied,
+        lastError:
+            identical(lastError, _sentinel) ? this.lastError : lastError as String?,
       );
 }
+
+const _sentinel = Object();
 
 class RiyazController extends Notifier<RiyazState> {
   late final SessionTimer _timer;
@@ -52,8 +64,22 @@ class RiyazController extends Notifier<RiyazState> {
 
   Future<void> start() async {
     if (state.session.isRunning) return;
-    final detector = ref.read(pitchDetectorProvider);
-    await detector.start();
+
+    try {
+      final detector = ref.read(pitchDetectorProvider);
+      await detector.start();
+      state = state.copyWith(micDenied: false, lastError: null);
+    } on MicPermissionDeniedException {
+      state = state.copyWith(micDenied: true);
+      ref.read(pitchSourceProvider.notifier).set(PitchSource.demo);
+      final fallback = ref.read(pitchDetectorProvider);
+      await fallback.start();
+    } catch (e) {
+      state = state.copyWith(lastError: e.toString());
+      ref.read(pitchSourceProvider.notifier).set(PitchSource.demo);
+      final fallback = ref.read(pitchDetectorProvider);
+      await fallback.start();
+    }
 
     _stability.reset();
     _timer.start();

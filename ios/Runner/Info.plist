@@ -45,5 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Sargam listens to your voice to detect pitch and give riyaz feedback.</string>
 </dict>
 </plist>

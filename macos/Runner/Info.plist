@@ -28,5 +28,7 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Sargam listens to your voice to detect pitch and give riyaz feedback.</string>
 </dict>
 </plist>
