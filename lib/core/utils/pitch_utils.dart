@@ -37,5 +37,10 @@ class PitchUtils {
         hz <= MusicConstants.maxDetectableHz;
   }
 
-  static double _log2(double x) => math.log(x) / math.ln2;
+  static double _log2(double x) {
+  if (x <= 0 || x.isNaN || x.isInfinite) {
+    return 0; // safe fallback
+  }
+  return math.log(x) / math.ln2;
+}
 }
