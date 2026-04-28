@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:pitch_detector_dart/pitch_detector.dart';
@@ -22,6 +23,12 @@ class MicPitchDetectorService implements PitchDetectorService {
   static const int _sampleRate = 44100;
   static const int _bufferSize = 2048;
   static const int _bytesPerBuffer = _bufferSize * 2; // PCM16 = 2 bytes/sample
+
+  /// Below this RMS the frame is treated as silence — gates background noise.
+  static const double _rmsSilenceThreshold = 0.012;
+
+  /// YIN probability below this is considered an unreliable detection.
+  static const double _confidenceFloor = 0.85;
 
   final _controller = StreamController<PitchReading>.broadcast();
   final AudioRecorder _recorder = AudioRecorder();
@@ -90,18 +97,48 @@ class MicPitchDetectorService implements PitchDetectorService {
     _busy = true;
     try {
       final floats = _pcm16LeToFloat(frameBytes);
+      final now = DateTime.now();
+
+      // Silence/background-noise gate before running YIN.
+      final rms = _rms(floats);
+      if (rms < _rmsSilenceThreshold) {
+        if (!_controller.isClosed) _controller.add(PitchReading.silent(now));
+        return;
+      }
+
       final result = await _detector.getPitchFromFloatBuffer(floats);
       if (_controller.isClosed) return;
+
+      final reliable =
+          result.pitched && result.probability >= _confidenceFloor;
       _controller.add(PitchReading(
-        hz: result.pitched ? result.pitch : 0,
+        hz: reliable ? result.pitch : 0,
         confidence: result.probability,
-        timestamp: DateTime.now(),
+        timestamp: now,
       ));
     } catch (e, st) {
-      if (!_controller.isClosed) _controller.addError(e, st);
+      // Swallow YIN/buffer errors instead of forwarding them to the UI —
+      // a single bad frame must never raise a red error screen.
+      if (!_controller.isClosed) {
+        _controller.add(PitchReading.silent(DateTime.now()));
+      }
+      assert(() {
+        // ignore: avoid_print
+        print('pitch frame error: $e\n$st');
+        return true;
+      }());
     } finally {
       _busy = false;
     }
+  }
+
+  static double _rms(List<double> samples) {
+    if (samples.isEmpty) return 0;
+    var sum = 0.0;
+    for (final v in samples) {
+      sum += v * v;
+    }
+    return math.sqrt(sum / samples.length);
   }
 
   static List<double> _pcm16LeToFloat(Uint8List bytes) {

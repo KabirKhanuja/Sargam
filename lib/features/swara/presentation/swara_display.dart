@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/pitch_utils.dart';
 import '../../pitch/presentation/pitch_provider.dart';
 import '../domain/swara_model.dart';
 import 'swara_provider.dart';
@@ -12,12 +13,11 @@ class SwaraDisplay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final swara = ref.watch(currentSwaraProvider);
-    final pitch = ref.watch(latestPitchProvider);
+    final stableMidi = ref.watch(stableMidiProvider);
 
     final swaraText = swara?.shortName ?? '–';
-    final westernText = (pitch != null && pitch.isVoiced)
-        ? pitch.westernNote
-        : '';
+    final westernText =
+        stableMidi != null ? PitchUtils.westernNoteName(stableMidi) : '';
     final regionText = swara?.region.label ?? '';
 
     return Column(

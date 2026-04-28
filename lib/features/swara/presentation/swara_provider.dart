@@ -22,8 +22,8 @@ final scaleConfigProvider =
     NotifierProvider<ScaleConfigNotifier, ScaleConfig>(ScaleConfigNotifier.new);
 
 final currentSwaraProvider = Provider<Swara?>((ref) {
-  final pitch = ref.watch(latestPitchProvider);
-  if (pitch == null || !pitch.isVoiced) return null;
+  final stableMidi = ref.watch(stableMidiProvider);
+  if (stableMidi == null) return null;
   final scale = ref.watch(scaleConfigProvider);
-  return ref.watch(swaraMapperProvider).mapMidi(pitch.nearestMidi, scale);
+  return ref.watch(swaraMapperProvider).mapMidi(stableMidi, scale);
 });

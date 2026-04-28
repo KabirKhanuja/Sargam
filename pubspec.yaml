@@ -36,6 +36,9 @@ dependencies:
   record: ^6.1.1
   pitch_detector_dart: ^0.0.7
 
+  # Tanpura drone playback.
+  audioplayers: ^6.5.0
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -64,7 +67,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/tanpura
+    - assets/tanpura/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

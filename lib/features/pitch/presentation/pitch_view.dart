@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/music_constants.dart';
 import 'pitch_provider.dart';
 
 class PitchAccuracyLabel extends ConsumerWidget {
@@ -23,44 +22,14 @@ class PitchAccuracyLabel extends ConsumerWidget {
       );
     }
 
-    final cents = pitch.cents;
-    final abs = cents.abs();
-    final color = abs <= MusicConstants.inTuneCents
-        ? AppColors.inTune
-        : abs <= MusicConstants.slightlyOffCents
-            ? AppColors.slightlyOff
-            : AppColors.offPitch;
-
-    final sign = cents >= 0 ? '+' : '−';
-    final value = abs.toStringAsFixed(0);
-    final label = abs <= MusicConstants.inTuneCents
-        ? 'In tune'
-        : (cents > 0 ? 'Sharp' : 'Flat');
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          '$sign$value¢',
-          style: TextStyle(
-            fontSize: 13,
-            letterSpacing: 1.2,
-            fontFeatures: const [FontFeature.tabularFigures()],
-            color: color,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Container(
-          width: 4,
-          height: 4,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 10),
-        Text(
-          label,
-          style: TextStyle(fontSize: 13, letterSpacing: 1.2, color: color),
-        ),
-      ],
+    return Text(
+      '${pitch.hz.toStringAsFixed(1)} Hz',
+      style: const TextStyle(
+        fontSize: 14,
+        letterSpacing: 1.6,
+        fontFeatures: [FontFeature.tabularFigures()],
+        color: AppColors.textSecondary,
+      ),
     );
   }
 }

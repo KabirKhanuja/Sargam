@@ -8,7 +8,6 @@ import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/pitch_indicator.dart';
 import '../../pitch/presentation/pitch_provider.dart';
 import '../../pitch/presentation/pitch_view.dart';
-import '../../swara/domain/swara_model.dart';
 import '../../swara/presentation/swara_display.dart';
 import '../../swara/presentation/swara_provider.dart';
 import '../../tanpura/presentation/tanpura_controls.dart';
@@ -87,11 +86,10 @@ class _ScalePill extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scale = ref.watch(scaleConfigProvider);
-    final notifier = ref.read(scaleConfigProvider.notifier);
     final saName = MusicConstants.westernNotesSharp[scale.saPitchClass];
 
     return GestureDetector(
-      onTap: () => _showSaPicker(context, scale, notifier),
+      onTap: () => _showSaPicker(context),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
@@ -129,11 +127,7 @@ class _ScalePill extends ConsumerWidget {
     );
   }
 
-  void _showSaPicker(
-    BuildContext context,
-    ScaleConfig scale,
-    ScaleConfigNotifier notifier,
-  ) {
+  void _showSaPicker(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.surface,
@@ -143,60 +137,147 @@ class _ScalePill extends ConsumerWidget {
       builder: (ctx) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Choose Sa',
-                  style: TextStyle(
-                    fontSize: 14,
-                    letterSpacing: 2,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  alignment: WrapAlignment.center,
-                  children: List.generate(12, (i) {
-                    final selected = i == scale.saPitchClass;
-                    return GestureDetector(
-                      onTap: () {
-                        notifier.setSaPitchClass(i);
-                        Navigator.of(ctx).pop();
-                      },
-                      child: Container(
-                        width: 56,
-                        height: 44,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? AppColors.gold
-                              : AppColors.surfaceHigh,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          MusicConstants.westernNotesSharp[i],
-                          style: TextStyle(
-                            color: selected
-                                ? const Color(0xFF1B1300)
-                                : AppColors.textPrimary,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Consumer(
+              builder: (ctx, ref, _) {
+                final scale = ref.watch(scaleConfigProvider);
+                final notifier = ref.read(scaleConfigProvider.notifier);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Choose Sa',
+                      style: TextStyle(
+                        fontSize: 14,
+                        letterSpacing: 2,
+                        color: AppColors.textSecondary,
                       ),
-                    );
-                  }),
-                ),
-                const SizedBox(height: 8),
-              ],
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.center,
+                      children: List.generate(12, (i) {
+                        final selected = i == scale.saPitchClass;
+                        return GestureDetector(
+                          onTap: () => notifier.setSaPitchClass(i),
+                          child: Container(
+                            width: 56,
+                            height: 44,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? AppColors.gold
+                                  : AppColors.surfaceHigh,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              MusicConstants.westernNotesSharp[i],
+                              style: TextStyle(
+                                color: selected
+                                    ? const Color(0xFF1B1300)
+                                    : AppColors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 18),
+                    _ScaleChart(saPitchClass: scale.saPitchClass),
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.gold,
+                        ),
+                        child: const Text('Done'),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _ScaleChart extends StatelessWidget {
+  final int saPitchClass;
+  const _ScaleChart({required this.saPitchClass});
+
+  // Shuddha (Bilawal) scale: Sa Re Ga Ma Pa Dha Ni Sa.
+  static const List<int> _semitoneOffsets = [0, 2, 4, 5, 7, 9, 11, 12];
+  static const List<String> _swaraNames = [
+    'Sa', 'Re', 'Ga', 'Ma', 'Pa', 'Dha', 'Ni', 'Sa',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            'SCALE',
+            style: TextStyle(
+              fontSize: 10,
+              letterSpacing: 2,
+              color: AppColors.textMuted,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceHigh,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(_swaraNames.length, (i) {
+              final pc = (saPitchClass + _semitoneOffsets[i]) % 12;
+              final note = MusicConstants.westernNotesSharp[pc];
+              final isSa = i == 0 || i == _swaraNames.length - 1;
+              return Expanded(
+                child: Column(
+                  children: [
+                    Text(
+                      _swaraNames[i],
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                        color: isSa
+                            ? AppColors.gold
+                            : AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      note,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
     );
   }
 }

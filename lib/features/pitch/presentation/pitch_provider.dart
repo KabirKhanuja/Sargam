@@ -42,3 +42,39 @@ final pitchStreamProvider = StreamProvider<PitchReading>((ref) {
 final latestPitchProvider = Provider<PitchReading?>((ref) {
   return ref.watch(pitchStreamProvider).asData?.value;
 });
+
+/// Smoothed MIDI note. Only flips when the same MIDI has been detected for
+/// [_minMatchFrames] consecutive voiced frames — prevents the swara label
+/// from flicker on transient sounds or vibrato near a semitone boundary.
+class StableMidiNotifier extends Notifier<int?> {
+  static const int _minMatchFrames = 3;
+  int? _candidate;
+  int _candidateCount = 0;
+
+  @override
+  int? build() {
+    ref.listen<PitchReading?>(latestPitchProvider, (_, next) {
+      if (next == null) return;
+      if (!next.isVoiced) {
+        _candidate = null;
+        _candidateCount = 0;
+        if (state != null) state = null;
+        return;
+      }
+      final midi = next.nearestMidi;
+      if (midi == _candidate) {
+        _candidateCount++;
+        if (_candidateCount >= _minMatchFrames && state != midi) {
+          state = midi;
+        }
+      } else {
+        _candidate = midi;
+        _candidateCount = 1;
+      }
+    });
+    return null;
+  }
+}
+
+final stableMidiProvider =
+    NotifierProvider<StableMidiNotifier, int?>(StableMidiNotifier.new);

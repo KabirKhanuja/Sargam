@@ -12,6 +12,21 @@ class TanpuraControls extends ConsumerWidget {
     final state = ref.watch(tanpuraControllerProvider);
     final controller = ref.read(tanpuraControllerProvider.notifier);
 
+    Future<void> handleToggle() async {
+      try {
+        final showReminder = await controller.requestPlay();
+        if (showReminder && context.mounted) {
+          _showHeadphonesReminder(context);
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Tanpura failed: $e')),
+          );
+        }
+      }
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
@@ -23,7 +38,7 @@ class TanpuraControls extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            onPressed: controller.toggle,
+            onPressed: handleToggle,
             icon: Icon(
               state.isPlaying ? Icons.pause_circle : Icons.play_circle,
               color: state.isPlaying ? AppColors.gold : AppColors.textSecondary,
@@ -59,6 +74,34 @@ class TanpuraControls extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showHeadphonesReminder(BuildContext context) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.surfaceHigh,
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: AppColors.gold.withValues(alpha: 0.4)),
+        ),
+        content: Row(
+          children: const [
+            Icon(Icons.headphones, color: AppColors.gold, size: 22),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Use headphones or earphones for the best tanpura experience.',
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
