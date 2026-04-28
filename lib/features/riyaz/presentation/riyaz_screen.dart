@@ -59,12 +59,15 @@ class RiyazScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Row(
-                        children: [
-                          Expanded(child: TanpuraControls()),
-                          SizedBox(width: 12),
-                          _ScalePill(),
-                        ],
+                      const IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(flex: 3, child: TanpuraControls()),
+                            SizedBox(width: 12),
+                            Expanded(flex: 2, child: _ScalePill()),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 14),
                       _PrimaryAction(
@@ -92,41 +95,45 @@ class _ScalePill extends ConsumerWidget {
     final scale = ref.watch(scaleConfigProvider);
     final saName = MusicConstants.westernNotesSharp[scale.saPitchClass];
 
-    return GestureDetector(
-      onTap: () => _showSaPicker(context),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.divider),
+    return OutlinedButton(
+      onPressed: () => _showSaPicker(context),
+      style: OutlinedButton.styleFrom(
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.gold,
+        side: const BorderSide(color: AppColors.divider),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Sa',
-              style: TextStyle(
-                fontSize: 12,
-                letterSpacing: 2,
-                color: AppColors.textMuted,
-              ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Sa',
+            style: TextStyle(
+              fontSize: 13,
+              letterSpacing: 1.6,
+              color: AppColors.textSecondary,
             ),
-            const SizedBox(width: 8),
-            Text(
-              saName,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.4,
-                color: AppColors.gold,
-              ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            saName,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.2,
+              color: AppColors.gold,
             ),
-            const SizedBox(width: 6),
-            const Icon(Icons.keyboard_arrow_down,
-                size: 16, color: AppColors.textMuted),
-          ],
-        ),
+          ),
+          const SizedBox(width: 4),
+          const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            size: 22,
+            color: AppColors.textSecondary,
+          ),
+        ],
       ),
     );
   }
@@ -190,9 +197,7 @@ class _ScalePill extends ConsumerWidget {
                         );
                       }),
                     ),
-                    const SizedBox(height: 18),
-                    _ScaleChart(saPitchClass: scale.saPitchClass),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(

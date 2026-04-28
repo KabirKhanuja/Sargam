@@ -119,16 +119,9 @@ class RiyazController extends Notifier<RiyazState> {
 
   Future<void> stop() async {
     if (!state.session.isRunning) return;
-    _ticker?.cancel();
-    _ticker = null;
-    _pitchSub?.close();
-    _pitchSub = null;
-    final detector = ref.read(pitchDetectorProvider);
-    await detector.stop();
 
-    _timer.stop();
-    _stability.reset();
-
+    // Flip UI state immediately — never let the button stay stuck waiting on
+    // a recorder that's slow to release the platform mic.
     state = state.copyWith(
       session: state.session.copyWith(
         endedAt: DateTime.now(),
@@ -137,6 +130,23 @@ class RiyazController extends Notifier<RiyazState> {
       isStable: false,
       stdDevCents: 0,
     );
+
+    _ticker?.cancel();
+    _ticker = null;
+    _pitchSub?.close();
+    _pitchSub = null;
+    _timer.stop();
+    _stability.reset();
+
+    try {
+      await ref.read(pitchDetectorProvider).stop();
+    } catch (e) {
+      assert(() {
+        // ignore: avoid_print
+        print('detector.stop error: $e');
+        return true;
+      }());
+    }
   }
 
   void reset() {
