@@ -6,6 +6,7 @@ class PitchUtils {
   PitchUtils._();
 
   static double midiFromHz(double hz) {
+    if (hz <= 0 || !hz.isFinite) return 0;
     return MusicConstants.a4Midi + 12.0 * _log2(hz / MusicConstants.a4Hz);
   }
 
@@ -15,16 +16,24 @@ class PitchUtils {
   }
 
   static int nearestMidi(double hz) {
-    return midiFromHz(hz).round();
+    if (hz <= 0 || !hz.isFinite) return 0;
+    final m = midiFromHz(hz);
+    if (!m.isFinite) return 0;
+    return m.round();
   }
 
   static double centsFromNearest(double hz) {
+    if (hz <= 0 || !hz.isFinite) return 0;
     final nearest = nearestMidi(hz);
+    if (nearest <= 0) return 0;
     final ref = hzFromMidi(nearest.toDouble());
-    return 1200.0 * _log2(hz / ref);
+    if (ref <= 0) return 0;
+    final v = 1200.0 * _log2(hz / ref);
+    return v.isFinite ? v : 0;
   }
 
   static String westernNoteName(int midi) {
+    if (midi <= 0) return '';
     final pc = ((midi % 12) + 12) % 12;
     final octave = (midi ~/ 12) - 1;
     return '${MusicConstants.westernNotesSharp[pc]}$octave';

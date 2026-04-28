@@ -18,8 +18,8 @@ class PrimaryActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = destructive ? AppColors.textPrimary : const Color(0xFF1B1300);
-    final bg = destructive ? AppColors.surfaceHigh : AppColors.gold;
+    final fg = destructive ? Colors.white : const Color(0xFF1B1300);
+    final bg = destructive ? AppColors.offPitch : AppColors.gold;
 
     return SizedBox(
       height: 56,

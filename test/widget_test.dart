@@ -7,6 +7,8 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: SargamApp()));
     await tester.pump();
     expect(find.text('Sargam'), findsOneWidget);
-    expect(find.text('Sa'), findsOneWidget);
+    expect(find.text('SCALE'), findsOneWidget);
+    expect(find.text('Start Riyaz'), findsOneWidget);
+    expect(find.text('Tanpura'), findsOneWidget);
   });
 }

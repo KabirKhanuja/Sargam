@@ -7,7 +7,6 @@ import '../../../core/utils/time_utils.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/pitch_indicator.dart';
 import '../../pitch/presentation/pitch_provider.dart';
-import '../../pitch/presentation/pitch_view.dart';
 import '../../swara/presentation/swara_display.dart';
 import '../../swara/presentation/swara_provider.dart';
 import '../../tanpura/presentation/tanpura_controls.dart';
@@ -35,39 +34,44 @@ class RiyazScreen extends ConsumerWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final ringMax = constraints.maxWidth < constraints.maxHeight * 0.6
-                ? constraints.maxWidth - 48
-                : constraints.maxHeight * 0.45;
-            final ringSize = ringMax.clamp(200.0, 360.0);
+            final ringMax = constraints.maxWidth < constraints.maxHeight * 0.55
+                ? constraints.maxWidth - 56
+                : constraints.maxHeight * 0.42;
+            final ringSize = ringMax.clamp(200.0, 340.0);
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
                   child: Column(
                     children: [
+                      if (riyaz.micDenied) ...[
+                        const _MicDeniedBanner(),
+                        const SizedBox(height: 12),
+                      ],
+                      const _ScaleChartCard(),
+                      const SizedBox(height: 14),
+                      _StatsRow(state: riyaz),
                       const SizedBox(height: 8),
-                      const _ScalePill(),
-                      const Spacer(),
-                      _PitchVisualization(ringSize: ringSize),
+                      Expanded(
+                        child: Center(
+                          child: _PitchVisualization(ringSize: ringSize),
+                        ),
+                      ),
                       const SizedBox(height: 12),
-                      const PitchAccuracyLabel(),
-                      const Spacer(),
-                      _SessionTimers(state: riyaz),
-                      const SizedBox(height: 12),
-                      if (riyaz.micDenied)
-                        const _MicDeniedBanner()
-                      else
-                        const _SourceIndicator(),
-                      const SizedBox(height: 8),
+                      const Row(
+                        children: [
+                          Expanded(child: TanpuraControls()),
+                          SizedBox(width: 12),
+                          _ScalePill(),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
                       _PrimaryAction(
                         isRunning: riyaz.session.isRunning,
                         onStart: controller.start,
                         onStop: controller.stop,
                       ),
-                      const SizedBox(height: 12),
-                      const TanpuraControls(),
-                      const SizedBox(height: 8),
                     ],
                   ),
                 ),
@@ -292,7 +296,7 @@ class _PitchVisualization extends ConsumerWidget {
     final riyaz = ref.watch(riyazControllerProvider);
 
     final voiced = pitch?.isVoiced ?? false;
-    final cents = pitch?.cents ?? 0;
+    final cents = voiced ? pitch!.cents : 0.0;
 
     return PitchRing(
       cents: cents,
@@ -304,102 +308,85 @@ class _PitchVisualization extends ConsumerWidget {
   }
 }
 
-class _SessionTimers extends StatelessWidget {
-  final RiyazState state;
-  const _SessionTimers({required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    final running = state.session.isRunning;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _TimerBlock(
-          label: 'TOTAL',
-          value: TimeUtils.formatDuration(state.session.totalDuration),
-          dim: !running,
-        ),
-        const SizedBox(width: 28),
-        Container(
-          width: 1,
-          height: 28,
-          color: AppColors.divider,
-        ),
-        const SizedBox(width: 28),
-        _TimerBlock(
-          label: 'EFFECTIVE',
-          value: TimeUtils.formatDuration(state.session.effectiveDuration),
-          highlight: running && state.isStable,
-          dim: !running,
-        ),
-      ],
-    );
-  }
-}
-
-class _TimerBlock extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool highlight;
-  final bool dim;
-
-  const _TimerBlock({
-    required this.label,
-    required this.value,
-    this.highlight = false,
-    this.dim = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = dim
-        ? AppColors.textMuted
-        : (highlight ? AppColors.gold : AppColors.textPrimary);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 10,
-            letterSpacing: 1.6,
-            color: AppColors.textMuted,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w400,
-            fontFeatures: const [FontFeature.tabularFigures()],
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SourceIndicator extends ConsumerWidget {
-  const _SourceIndicator();
+class _ScaleChartCard extends ConsumerWidget {
+  const _ScaleChartCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final source = ref.watch(pitchSourceProvider);
-    if (source == PitchSource.mic) return const SizedBox(height: 0);
+    final scale = ref.watch(scaleConfigProvider);
+    return _ScaleChart(saPitchClass: scale.saPitchClass);
+  }
+}
+
+/// TOTAL time on the left (with EFFECTIVE underneath in muted text);
+/// detected frequency in Hz on the right.
+class _StatsRow extends ConsumerWidget {
+  final RiyazState state;
+  const _StatsRow({required this.state});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pitch = ref.watch(latestPitchProvider);
+    final running = state.session.isRunning;
+
+    final totalText = TimeUtils.formatDuration(state.session.totalDuration);
+    final effectiveText =
+        TimeUtils.formatDuration(state.session.effectiveDuration);
+    final hzText = (pitch != null && pitch.isVoiced)
+        ? '${pitch.hz.toStringAsFixed(1)} Hz'
+        : '—';
+
+    final timerColor =
+        running ? AppColors.textPrimary : AppColors.textMuted;
+    final hzColor = (pitch != null && pitch.isVoiced)
+        ? AppColors.gold
+        : AppColors.textMuted;
+
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Icon(Icons.science_outlined,
-            size: 14, color: AppColors.textMuted),
-        const SizedBox(width: 6),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'TOTAL',
+              style: TextStyle(
+                fontSize: 10,
+                letterSpacing: 1.6,
+                color: AppColors.textMuted,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              totalText,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w400,
+                fontFeatures: const [FontFeature.tabularFigures()],
+                color: timerColor,
+              ),
+            ),
+            Text(
+              'Effective $effectiveText',
+              style: TextStyle(
+                fontSize: 11,
+                letterSpacing: 0.8,
+                color: state.isStable
+                    ? AppColors.gold
+                    : AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
+        const Spacer(),
         Text(
-          'Demo source',
+          hzText,
           style: TextStyle(
-            fontSize: 11,
-            letterSpacing: 1.4,
-            color: AppColors.textMuted,
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.5,
+            fontFeatures: const [FontFeature.tabularFigures()],
+            color: hzColor,
           ),
         ),
       ],
