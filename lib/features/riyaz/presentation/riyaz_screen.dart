@@ -77,8 +77,8 @@ class RiyazScreen extends ConsumerWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Expanded(flex: 3, child: TanpuraControls()),
-                      SizedBox(width: 12),
+                      Expanded(flex: 2, child: TanpuraControls()),
+                      const SizedBox(width: 10),
                       Expanded(flex: 2, child: _ScalePill()),
                     ],
                   ),
@@ -113,7 +113,7 @@ class _ScalePill extends ConsumerWidget {
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.gold,
         side: const BorderSide(color: AppColors.divider),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         minimumSize: const Size(0, 0),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -124,24 +124,24 @@ class _ScalePill extends ConsumerWidget {
           const Text(
             'Sa',
             style: TextStyle(
-              fontSize: 12,
-              letterSpacing: 1.4,
+              fontSize: 11,
+              letterSpacing: 1.2,
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text(
             saName,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w600,
-              letterSpacing: 1,
+              letterSpacing: 0.9,
               color: AppColors.gold,
             ),
           ),
           const Icon(
             Icons.keyboard_arrow_down_rounded,
-            size: 20,
+            size: 18,
             color: AppColors.textSecondary,
           ),
         ],

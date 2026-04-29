@@ -20,15 +20,15 @@ class TanpuraControls extends ConsumerWidget {
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Tanpura failed: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Tanpura failed: $e')));
         }
       }
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(28),
@@ -41,17 +41,17 @@ class TanpuraControls extends ConsumerWidget {
             icon: Icon(
               state.isPlaying ? Icons.pause_circle : Icons.play_circle,
               color: state.isPlaying ? AppColors.gold : AppColors.textSecondary,
-              size: 26,
+              size: 24,
             ),
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
           ),
           Expanded(
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                trackHeight: 2,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                trackHeight: 1.6,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
                 overlayShape: SliderComponentShape.noOverlay,
                 activeTrackColor: AppColors.goldSoft,
                 inactiveTrackColor: AppColors.divider,
