@@ -9,6 +9,6 @@ void main() {
     expect(find.text('Sargam'), findsOneWidget);
     expect(find.text('SCALE'), findsOneWidget);
     expect(find.text('Start Riyaz'), findsOneWidget);
-    expect(find.text('Tanpura'), findsOneWidget);
+    expect(find.text('TOTAL'), findsOneWidget);
   });
 }

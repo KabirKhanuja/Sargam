@@ -28,36 +28,26 @@ class TanpuraControls extends ConsumerWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: AppColors.divider),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
             onPressed: handleToggle,
             icon: Icon(
               state.isPlaying ? Icons.pause_circle : Icons.play_circle,
               color: state.isPlaying ? AppColors.gold : AppColors.textSecondary,
-              size: 28,
+              size: 26,
             ),
             visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           ),
-          const SizedBox(width: 4),
-          const Text(
-            'Tanpura',
-            style: TextStyle(
-              fontSize: 13,
-              letterSpacing: 1.2,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 120,
+          Expanded(
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 trackHeight: 2,

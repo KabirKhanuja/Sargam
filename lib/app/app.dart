@@ -11,7 +11,7 @@ class SargamApp extends StatelessWidget {
       title: 'Sargam',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      initialRoute: AppRoutes.auth,
+      initialRoute: AppRoutes.home,
       routes: AppRoutes.routes,
     );
   }

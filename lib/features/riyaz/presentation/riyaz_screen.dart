@@ -24,8 +24,8 @@ class RiyazDisplayModeNotifier extends Notifier<RiyazDisplayMode> {
 
 final riyazDisplayModeProvider =
     NotifierProvider<RiyazDisplayModeNotifier, RiyazDisplayMode>(
-  RiyazDisplayModeNotifier.new,
-);
+      RiyazDisplayModeNotifier.new,
+    );
 
 class RiyazScreen extends ConsumerWidget {
   const RiyazScreen({super.key});
@@ -74,8 +74,8 @@ class RiyazScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(flex: 3, child: TanpuraControls()),
                       SizedBox(width: 12),
@@ -113,10 +113,10 @@ class _ScalePill extends ConsumerWidget {
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.gold,
         side: const BorderSide(color: AppColors.divider),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        minimumSize: const Size(0, 0),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -124,25 +124,24 @@ class _ScalePill extends ConsumerWidget {
           const Text(
             'Sa',
             style: TextStyle(
-              fontSize: 13,
-              letterSpacing: 1.6,
+              fontSize: 12,
+              letterSpacing: 1.4,
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Text(
             saName,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
-              letterSpacing: 1.2,
+              letterSpacing: 1,
               color: AppColors.gold,
             ),
           ),
-          const SizedBox(width: 4),
           const Icon(
             Icons.keyboard_arrow_down_rounded,
-            size: 22,
+            size: 20,
             color: AppColors.textSecondary,
           ),
         ],
@@ -238,7 +237,14 @@ class _ScaleChart extends StatelessWidget {
   // Shuddha (Bilawal) scale: Sa Re Ga Ma Pa Dha Ni Sa.
   static const List<int> _semitoneOffsets = [0, 2, 4, 5, 7, 9, 11, 12];
   static const List<String> _swaraNames = [
-    'Sa', 'Re', 'Ga', 'Ma', 'Pa', 'Dha', 'Ni', 'Sa',
+    'Sa',
+    'Re',
+    'Ga',
+    'Ma',
+    'Pa',
+    'Dha',
+    'Ni',
+    'Sa',
   ];
 
   @override
@@ -279,9 +285,7 @@ class _ScaleChart extends StatelessWidget {
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
-                        color: isSa
-                            ? AppColors.gold
-                            : AppColors.textPrimary,
+                        color: isSa ? AppColors.gold : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -375,15 +379,15 @@ class _ModeToggle extends ConsumerWidget {
             label: 'Swara mode',
             selected: mode == RiyazDisplayMode.swara,
             onTap: () => ref
-              .read(riyazDisplayModeProvider.notifier)
-              .setMode(RiyazDisplayMode.swara),
+                .read(riyazDisplayModeProvider.notifier)
+                .setMode(RiyazDisplayMode.swara),
           ),
           _ModeChip(
             label: 'Piano mode',
             selected: mode == RiyazDisplayMode.piano,
             onTap: () => ref
-              .read(riyazDisplayModeProvider.notifier)
-              .setMode(RiyazDisplayMode.piano),
+                .read(riyazDisplayModeProvider.notifier)
+                .setMode(RiyazDisplayMode.piano),
           ),
         ],
       ),
@@ -455,14 +459,14 @@ class _StatsRow extends ConsumerWidget {
     final running = state.session.isRunning;
 
     final totalText = TimeUtils.formatDuration(state.session.totalDuration);
-    final effectiveText =
-        TimeUtils.formatDuration(state.session.effectiveDuration);
+    final effectiveText = TimeUtils.formatDuration(
+      state.session.effectiveDuration,
+    );
     final hzText = (pitch != null && pitch.isVoiced)
         ? '${pitch.hz.toStringAsFixed(1)} Hz'
         : '—';
 
-    final timerColor =
-        running ? AppColors.textPrimary : AppColors.textMuted;
+    final timerColor = running ? AppColors.textPrimary : AppColors.textMuted;
     final hzColor = (pitch != null && pitch.isVoiced)
         ? AppColors.gold
         : AppColors.textMuted;
@@ -496,9 +500,7 @@ class _StatsRow extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 11,
                 letterSpacing: 0.8,
-                color: state.isStable
-                    ? AppColors.gold
-                    : AppColors.textMuted,
+                color: state.isStable ? AppColors.gold : AppColors.textMuted,
               ),
             ),
           ],
@@ -534,8 +536,11 @@ class _MicDeniedBanner extends ConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.mic_off_rounded,
-              size: 16, color: AppColors.offPitch),
+          const Icon(
+            Icons.mic_off_rounded,
+            size: 16,
+            color: AppColors.offPitch,
+          ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(

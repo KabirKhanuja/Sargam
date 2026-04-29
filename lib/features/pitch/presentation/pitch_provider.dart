@@ -47,7 +47,7 @@ final latestPitchProvider = Provider<PitchReading?>((ref) {
 /// [_minMatchFrames] consecutive voiced frames — prevents the swara label
 /// from flicker on transient sounds or vibrato near a semitone boundary.
 class StableMidiNotifier extends Notifier<int?> {
-  static const int _minMatchFrames = 3;
+  static const int _minMatchFrames = 2;
   int? _candidate;
   int _candidateCount = 0;
 
