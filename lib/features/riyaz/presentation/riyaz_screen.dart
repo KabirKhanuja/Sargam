@@ -15,8 +15,17 @@ import 'riyaz_provider.dart';
 
 enum RiyazDisplayMode { swara, piano }
 
+class RiyazDisplayModeNotifier extends Notifier<RiyazDisplayMode> {
+  @override
+  RiyazDisplayMode build() => RiyazDisplayMode.swara;
+
+  void setMode(RiyazDisplayMode mode) => state = mode;
+}
+
 final riyazDisplayModeProvider =
-  StateProvider<RiyazDisplayMode>((_) => RiyazDisplayMode.swara);
+    NotifierProvider<RiyazDisplayModeNotifier, RiyazDisplayMode>(
+  RiyazDisplayModeNotifier.new,
+);
 
 class RiyazScreen extends ConsumerWidget {
   const RiyazScreen({super.key});
@@ -349,15 +358,15 @@ class _ModeToggle extends ConsumerWidget {
             label: 'Swara mode',
             selected: mode == RiyazDisplayMode.swara,
             onTap: () => ref
-                .read(riyazDisplayModeProvider.notifier)
-                .state = RiyazDisplayMode.swara,
+              .read(riyazDisplayModeProvider.notifier)
+              .setMode(RiyazDisplayMode.swara),
           ),
           _ModeChip(
             label: 'Piano mode',
             selected: mode == RiyazDisplayMode.piano,
             onTap: () => ref
-                .read(riyazDisplayModeProvider.notifier)
-                .state = RiyazDisplayMode.piano,
+              .read(riyazDisplayModeProvider.notifier)
+              .setMode(RiyazDisplayMode.piano),
           ),
         ],
       ),
