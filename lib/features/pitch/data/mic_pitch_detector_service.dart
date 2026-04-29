@@ -25,10 +25,14 @@ class MicPitchDetectorService implements PitchDetectorService {
   static const int _bytesPerBuffer = _bufferSize * 2; // PCM16 = 2 bytes/sample
 
   /// Below this RMS the frame is treated as silence — gates background noise.
-  static const double _rmsSilenceThreshold = 0.012;
+  /// Tuned to register quiet humming/soft singing while still rejecting room
+  /// hum and breath noise.
+  static const double _rmsSilenceThreshold = 0.004;
 
   /// YIN probability below this is considered an unreliable detection.
-  static const double _confidenceFloor = 0.85;
+  /// Soft voices commonly sit in the 0.7–0.85 band — keep the floor low
+  /// enough to accept them.
+  static const double _confidenceFloor = 0.70;
 
   final _controller = StreamController<PitchReading>.broadcast();
   final AudioRecorder _recorder = AudioRecorder();

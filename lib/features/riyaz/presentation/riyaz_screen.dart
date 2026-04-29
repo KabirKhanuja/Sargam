@@ -10,7 +10,22 @@ import '../../pitch/presentation/pitch_provider.dart';
 import '../../swara/presentation/swara_display.dart';
 import '../../swara/presentation/swara_provider.dart';
 import '../../tanpura/presentation/tanpura_controls.dart';
+import 'widgets/piano_keyboard.dart';
 import 'riyaz_provider.dart';
+
+enum RiyazDisplayMode { swara, piano }
+
+class RiyazDisplayModeNotifier extends Notifier<RiyazDisplayMode> {
+  @override
+  RiyazDisplayMode build() => RiyazDisplayMode.swara;
+
+  void setMode(RiyazDisplayMode mode) => state = mode;
+}
+
+final riyazDisplayModeProvider =
+    NotifierProvider<RiyazDisplayModeNotifier, RiyazDisplayMode>(
+      RiyazDisplayModeNotifier.new,
+    );
 
 class RiyazScreen extends ConsumerWidget {
   const RiyazScreen({super.key});
@@ -40,44 +55,41 @@ class RiyazScreen extends ConsumerWidget {
             final ringSize = ringMax.clamp(200.0, 340.0);
             return SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
+              child: Column(
+                children: [
+                  if (riyaz.micDenied) ...[
+                    const _MicDeniedBanner(),
+                    const SizedBox(height: 12),
+                  ],
+                  const _ScaleChartCard(),
+                  const SizedBox(height: 14),
+                  _StatsRow(state: riyaz),
+                  const SizedBox(height: 10),
+                  const _ModeToggle(),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    height: ringSize,
+                    child: Center(
+                      child: _PitchVisualization(ringSize: ringSize),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      if (riyaz.micDenied) ...[
-                        const _MicDeniedBanner(),
-                        const SizedBox(height: 12),
-                      ],
-                      const _ScaleChartCard(),
-                      const SizedBox(height: 14),
-                      _StatsRow(state: riyaz),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        child: Center(
-                          child: _PitchVisualization(ringSize: ringSize),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(flex: 3, child: TanpuraControls()),
-                            SizedBox(width: 12),
-                            Expanded(flex: 2, child: _ScalePill()),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      _PrimaryAction(
-                        isRunning: riyaz.session.isRunning,
-                        onStart: controller.start,
-                        onStop: controller.stop,
-                      ),
+                      Expanded(flex: 3, child: TanpuraControls()),
+                      SizedBox(width: 12),
+                      Expanded(flex: 2, child: _ScalePill()),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 14),
+                  _PrimaryAction(
+                    isRunning: riyaz.session.isRunning,
+                    onStart: controller.start,
+                    onStop: controller.stop,
+                  ),
+                  SizedBox(height: constraints.maxHeight * 0.06),
+                ],
               ),
             );
           },
@@ -101,10 +113,10 @@ class _ScalePill extends ConsumerWidget {
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.gold,
         side: const BorderSide(color: AppColors.divider),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        minimumSize: const Size(0, 0),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -112,25 +124,24 @@ class _ScalePill extends ConsumerWidget {
           const Text(
             'Sa',
             style: TextStyle(
-              fontSize: 13,
-              letterSpacing: 1.6,
+              fontSize: 12,
+              letterSpacing: 1.4,
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Text(
             saName,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
-              letterSpacing: 1.2,
+              letterSpacing: 1,
               color: AppColors.gold,
             ),
           ),
-          const SizedBox(width: 4),
           const Icon(
             Icons.keyboard_arrow_down_rounded,
-            size: 22,
+            size: 20,
             color: AppColors.textSecondary,
           ),
         ],
@@ -226,7 +237,14 @@ class _ScaleChart extends StatelessWidget {
   // Shuddha (Bilawal) scale: Sa Re Ga Ma Pa Dha Ni Sa.
   static const List<int> _semitoneOffsets = [0, 2, 4, 5, 7, 9, 11, 12];
   static const List<String> _swaraNames = [
-    'Sa', 'Re', 'Ga', 'Ma', 'Pa', 'Dha', 'Ni', 'Sa',
+    'Sa',
+    'Re',
+    'Ga',
+    'Ma',
+    'Pa',
+    'Dha',
+    'Ni',
+    'Sa',
   ];
 
   @override
@@ -267,9 +285,7 @@ class _ScaleChart extends StatelessWidget {
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
-                        color: isSa
-                            ? AppColors.gold
-                            : AppColors.textPrimary,
+                        color: isSa ? AppColors.gold : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -299,9 +315,40 @@ class _PitchVisualization extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pitch = ref.watch(latestPitchProvider);
     final riyaz = ref.watch(riyazControllerProvider);
+    final mode = ref.watch(riyazDisplayModeProvider);
+    final stableMidi = ref.watch(stableMidiProvider);
 
     final voiced = pitch?.isVoiced ?? false;
     final cents = voiced ? pitch!.cents : 0.0;
+
+    if (mode == RiyazDisplayMode.piano) {
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceHigh,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.divider),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Piano mode',
+              style: TextStyle(
+                fontSize: 11,
+                letterSpacing: 2,
+                color: AppColors.textMuted,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: ringSize * 0.7,
+              child: PianoKeyboard(activeMidi: stableMidi),
+            ),
+          ],
+        ),
+      );
+    }
 
     return PitchRing(
       cents: cents,
@@ -309,6 +356,83 @@ class _PitchVisualization extends ConsumerWidget {
       stable: riyaz.isStable,
       size: ringSize,
       center: const SwaraDisplay(),
+    );
+  }
+}
+
+class _ModeToggle extends ConsumerWidget {
+  const _ModeToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(riyazDisplayModeProvider);
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Row(
+        children: [
+          _ModeChip(
+            label: 'Swara mode',
+            selected: mode == RiyazDisplayMode.swara,
+            onTap: () => ref
+                .read(riyazDisplayModeProvider.notifier)
+                .setMode(RiyazDisplayMode.swara),
+          ),
+          _ModeChip(
+            label: 'Piano mode',
+            selected: mode == RiyazDisplayMode.piano,
+            onTap: () => ref
+                .read(riyazDisplayModeProvider.notifier)
+                .setMode(RiyazDisplayMode.piano),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModeChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ModeChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.gold : Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w600,
+                color: selected
+                    ? const Color(0xFF1B1300)
+                    : AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -335,14 +459,14 @@ class _StatsRow extends ConsumerWidget {
     final running = state.session.isRunning;
 
     final totalText = TimeUtils.formatDuration(state.session.totalDuration);
-    final effectiveText =
-        TimeUtils.formatDuration(state.session.effectiveDuration);
+    final effectiveText = TimeUtils.formatDuration(
+      state.session.effectiveDuration,
+    );
     final hzText = (pitch != null && pitch.isVoiced)
         ? '${pitch.hz.toStringAsFixed(1)} Hz'
         : '—';
 
-    final timerColor =
-        running ? AppColors.textPrimary : AppColors.textMuted;
+    final timerColor = running ? AppColors.textPrimary : AppColors.textMuted;
     final hzColor = (pitch != null && pitch.isVoiced)
         ? AppColors.gold
         : AppColors.textMuted;
@@ -376,9 +500,7 @@ class _StatsRow extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 11,
                 letterSpacing: 0.8,
-                color: state.isStable
-                    ? AppColors.gold
-                    : AppColors.textMuted,
+                color: state.isStable ? AppColors.gold : AppColors.textMuted,
               ),
             ),
           ],
@@ -414,8 +536,11 @@ class _MicDeniedBanner extends ConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.mic_off_rounded,
-              size: 16, color: AppColors.offPitch),
+          const Icon(
+            Icons.mic_off_rounded,
+            size: 16,
+            color: AppColors.offPitch,
+          ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
