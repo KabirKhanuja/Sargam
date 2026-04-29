@@ -65,20 +65,24 @@ class RiyazController extends Notifier<RiyazState> {
   Future<void> start() async {
     if (state.session.isRunning) return;
 
+    // Honour the configured source. NEVER silently fall back to demo —
+    // that mode previously masked real mic failures and made it look like
+    // the app was responding when it was actually playing a pre-baked phrase.
     try {
       final detector = ref.read(pitchDetectorProvider);
       await detector.start();
       state = state.copyWith(micDenied: false, lastError: null);
     } on MicPermissionDeniedException {
-      state = state.copyWith(micDenied: true);
-      ref.read(pitchSourceProvider.notifier).set(PitchSource.demo);
-      final fallback = ref.read(pitchDetectorProvider);
-      await fallback.start();
+      state = state.copyWith(
+        micDenied: true,
+        lastError: 'Microphone permission denied',
+      );
+      return;
     } catch (e) {
-      state = state.copyWith(lastError: e.toString());
-      ref.read(pitchSourceProvider.notifier).set(PitchSource.demo);
-      final fallback = ref.read(pitchDetectorProvider);
-      await fallback.start();
+      state = state.copyWith(
+        lastError: 'Mic init failed: $e',
+      );
+      return;
     }
 
     _stability.reset();

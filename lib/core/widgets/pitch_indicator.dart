@@ -28,17 +28,13 @@ class PitchRing extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: CustomPaint(
-          key: ValueKey('$voiced-$stable'),
-          painter: _PitchRingPainter(
-            cents: cents,
-            voiced: voiced,
-            stable: stable,
-          ),
-          child: Center(child: center ?? const SizedBox.shrink()),
+      child: CustomPaint(
+        painter: _PitchRingPainter(
+          cents: cents,
+          voiced: voiced,
+          stable: stable,
         ),
+        child: Center(child: center ?? const SizedBox.shrink()),
       ),
     );
   }

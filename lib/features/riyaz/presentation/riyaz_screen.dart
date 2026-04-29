@@ -7,6 +7,7 @@ import '../../../core/utils/time_utils.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/pitch_indicator.dart';
 import '../../pitch/presentation/pitch_provider.dart';
+import '../../pitch/presentation/pitch_track_bar.dart';
 import '../../swara/presentation/swara_display.dart';
 import '../../swara/presentation/swara_provider.dart';
 import '../../tanpura/presentation/tanpura_controls.dart';
@@ -57,8 +58,8 @@ class RiyazScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
               child: Column(
                 children: [
-                  if (riyaz.micDenied) ...[
-                    const _MicDeniedBanner(),
+                  if (riyaz.micDenied || riyaz.lastError != null) ...[
+                    _MicErrorBanner(state: riyaz),
                     const SizedBox(height: 12),
                   ],
                   const _ScaleChartCard(),
@@ -66,7 +67,9 @@ class RiyazScreen extends ConsumerWidget {
                   _StatsRow(state: riyaz),
                   const SizedBox(height: 10),
                   const _ModeToggle(),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 10),
+                  const PitchTrackBar(),
+                  const SizedBox(height: 12),
                   SizedBox(
                     height: ringSize,
                     child: Center(
@@ -521,36 +524,65 @@ class _StatsRow extends ConsumerWidget {
   }
 }
 
-class _MicDeniedBanner extends ConsumerWidget {
-  const _MicDeniedBanner();
+class _MicErrorBanner extends ConsumerWidget {
+  final RiyazState state;
+  const _MicErrorBanner({required this.state});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final source = ref.watch(pitchSourceProvider);
+    final usingDemo = source == PitchSource.demo;
+    final message = state.micDenied
+        ? 'Microphone permission denied. Grant access in system settings, then tap Start again.'
+        : (state.lastError ?? 'Mic init failed.');
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.offPitch.withValues(alpha: 0.4)),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.offPitch.withValues(alpha: 0.45)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.mic_off_rounded,
-            size: 16,
-            color: AppColors.offPitch,
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              'Mic denied — using demo source',
-              style: const TextStyle(
-                fontSize: 12,
-                letterSpacing: 0.8,
-                color: AppColors.textSecondary,
+          Row(
+            children: [
+              const Icon(Icons.mic_off_rounded,
+                  size: 18, color: AppColors.offPitch),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    height: 1.35,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ),
-            ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () {
+                  ref
+                      .read(pitchSourceProvider.notifier)
+                      .set(usingDemo ? PitchSource.mic : PitchSource.demo);
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.gold,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: const Size(0, 32),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(usingDemo ? 'Use mic' : 'Try demo'),
+              ),
+            ],
           ),
         ],
       ),

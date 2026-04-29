@@ -12,17 +12,14 @@ class PitchReading {
   });
 
   bool get isVoiced =>
-      hz > 0 && confidence > 0.5 && PitchUtils.isInDetectableRange(hz);
+      hz > 0 && confidence > 0.35 && PitchUtils.isInDetectableRange(hz);
 
   int get nearestMidi => PitchUtils.nearestMidi(hz);
   double get cents => PitchUtils.centsFromNearest(hz);
   String get westernNote => PitchUtils.westernNoteName(nearestMidi);
 
-  static PitchReading silent(DateTime timestamp) => PitchReading(
-        hz: 0,
-        confidence: 0,
-        timestamp: timestamp,
-      );
+  static PitchReading silent(DateTime timestamp) =>
+      PitchReading(hz: 0, confidence: 0, timestamp: timestamp);
 }
 
 enum PitchAccuracy { inTune, slightlySharp, slightlyFlat, sharp, flat }
