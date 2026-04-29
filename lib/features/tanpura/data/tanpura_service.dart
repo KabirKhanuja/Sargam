@@ -12,18 +12,18 @@ abstract class TanpuraService {
 
 class AudioPlayersTanpuraService implements TanpuraService {
   static const List<String> _assetByPitchClass = [
-    'tanpura/tanpura_C.mp3',
-    'tanpura/tanpura_Csharp.mp3',
-    'tanpura/tanpura_D.mp3',
-    'tanpura/tanpura_Dsharp.mp3',
-    'tanpura/tanpura_E.mp3',
-    'tanpura/tanpura_F.mp3',
-    'tanpura/tanpura_Fsharp.mp3',
-    'tanpura/tanpura_G.mp3',
-    'tanpura/tanpura_Gsharp.mp3',
-    'tanpura/tanpura_A.mp3',
-    'tanpura/tanpura_Asharp.mp3',
-    'tanpura/tanpura_B.mp3',
+    'assets/tanpura/tanpura_C.mp3',
+    'assets/tanpura/tanpura_Csharp.mp3',
+    'assets/tanpura/tanpura_D.mp3',
+    'assets/tanpura/tanpura_Dsharp.mp3',
+    'assets/tanpura/tanpura_E.mp3',
+    'assets/tanpura/tanpura_F.mp3',
+    'assets/tanpura/tanpura_Fsharp.mp3',
+    'assets/tanpura/tanpura_G.mp3',
+    'assets/tanpura/tanpura_Gsharp.mp3',
+    'assets/tanpura/tanpura_A.mp3',
+    'assets/tanpura/tanpura_Asharp.mp3',
+    'assets/tanpura/tanpura_B.mp3',
   ];
 
   final AudioPlayer _player = AudioPlayer(playerId: 'sargam-tanpura');
