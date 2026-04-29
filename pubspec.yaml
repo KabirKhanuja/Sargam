@@ -32,6 +32,9 @@ dependencies:
     sdk: flutter
   flutter_riverpod: ^3.3.1
 
+  # Persistent key-value storage (web: localStorage; mobile: NSUserDefaults/SharedPreferences).
+  shared_preferences: ^2.3.2
+
   # Microphone capture (PCM stream) and pitch detection (YIN).
   record: ^6.1.1
   pitch_detector_dart: ^0.0.7
