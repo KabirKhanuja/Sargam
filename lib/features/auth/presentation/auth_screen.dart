@@ -30,6 +30,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        ref.read(authControllerProvider.notifier).clearError();
+      }
+    });
   }
 
   @override
@@ -46,6 +51,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
+    final errorMessage = authState.lastError;
     if (authState.isSignedIn) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacementNamed(AppRoutes.profile);
@@ -120,6 +126,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         ],
                       ),
                     ),
+                    if (errorMessage != null) ...[
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          errorMessage,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            letterSpacing: 0.4,
+                            color: AppColors.offPitch,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                   ],
                 ),
               ),
@@ -141,19 +163,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
   void _handleLogin() {
     if (!(_loginKey.currentState?.validate() ?? false)) return;
-    ref.read(authControllerProvider.notifier).signIn(
+    final ok = ref.read(authControllerProvider.notifier).signIn(
           email: _loginEmailController.text,
+          password: _loginPasswordController.text,
         );
-    Navigator.of(context).pushReplacementNamed(AppRoutes.profile);
+    if (ok) {
+      Navigator.of(context).pushReplacementNamed(AppRoutes.profile);
+    }
   }
 
   void _handleSignup() {
     if (!(_signupKey.currentState?.validate() ?? false)) return;
-    ref.read(authControllerProvider.notifier).signUp(
+    final ok = ref.read(authControllerProvider.notifier).signUp(
           name: _signupNameController.text,
           email: _signupEmailController.text,
+          password: _signupPasswordController.text,
         );
-    Navigator.of(context).pushReplacementNamed(AppRoutes.profile);
+    if (ok) {
+      Navigator.of(context).pushReplacementNamed(AppRoutes.profile);
+    }
   }
 }
 
@@ -320,7 +348,7 @@ String? _validateEmail(String? value) {
 
 String? _validatePassword(String? value) {
   final text = value ?? '';
-  if (text.length < 4) return 'Use at least 4 characters.';
+  if (text.length < 6) return 'Use at least 6 characters.';
   return null;
 }
 

@@ -55,46 +55,41 @@ class RiyazScreen extends ConsumerWidget {
             final ringSize = ringMax.clamp(200.0, 340.0);
             return SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
+              child: Column(
+                children: [
+                  if (riyaz.micDenied) ...[
+                    const _MicDeniedBanner(),
+                    const SizedBox(height: 12),
+                  ],
+                  const _ScaleChartCard(),
+                  const SizedBox(height: 14),
+                  _StatsRow(state: riyaz),
+                  const SizedBox(height: 10),
+                  const _ModeToggle(),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    height: ringSize,
+                    child: Center(
+                      child: _PitchVisualization(ringSize: ringSize),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      if (riyaz.micDenied) ...[
-                        const _MicDeniedBanner(),
-                        const SizedBox(height: 12),
-                      ],
-                      const _ScaleChartCard(),
-                      const SizedBox(height: 14),
-                      _StatsRow(state: riyaz),
-                      const SizedBox(height: 10),
-                      const _ModeToggle(),
-                      const SizedBox(height: 6),
-                      Expanded(
-                        child: Center(
-                          child: _PitchVisualization(ringSize: ringSize),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(flex: 3, child: TanpuraControls()),
-                            SizedBox(width: 12),
-                            Expanded(flex: 2, child: _ScalePill()),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      _PrimaryAction(
-                        isRunning: riyaz.session.isRunning,
-                        onStart: controller.start,
-                        onStop: controller.stop,
-                      ),
+                      Expanded(flex: 3, child: TanpuraControls()),
+                      SizedBox(width: 12),
+                      Expanded(flex: 2, child: _ScalePill()),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 14),
+                  _PrimaryAction(
+                    isRunning: riyaz.session.isRunning,
+                    onStart: controller.start,
+                    onStop: controller.stop,
+                  ),
+                  SizedBox(height: constraints.maxHeight * 0.06),
+                ],
               ),
             );
           },
@@ -323,9 +318,31 @@ class _PitchVisualization extends ConsumerWidget {
     final cents = voiced ? pitch!.cents : 0.0;
 
     if (mode == RiyazDisplayMode.piano) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: PianoKeyboard(activeMidi: stableMidi),
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceHigh,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.divider),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Piano mode',
+              style: TextStyle(
+                fontSize: 11,
+                letterSpacing: 2,
+                color: AppColors.textMuted,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: ringSize * 0.7,
+              child: PianoKeyboard(activeMidi: stableMidi),
+            ),
+          ],
+        ),
       );
     }
 
