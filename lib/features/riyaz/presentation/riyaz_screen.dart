@@ -10,7 +10,13 @@ import '../../pitch/presentation/pitch_provider.dart';
 import '../../swara/presentation/swara_display.dart';
 import '../../swara/presentation/swara_provider.dart';
 import '../../tanpura/presentation/tanpura_controls.dart';
+import 'widgets/piano_keyboard.dart';
 import 'riyaz_provider.dart';
+
+enum RiyazDisplayMode { swara, piano }
+
+final riyazDisplayModeProvider =
+  StateProvider<RiyazDisplayMode>((_) => RiyazDisplayMode.swara);
 
 class RiyazScreen extends ConsumerWidget {
   const RiyazScreen({super.key});
@@ -52,7 +58,9 @@ class RiyazScreen extends ConsumerWidget {
                       const _ScaleChartCard(),
                       const SizedBox(height: 14),
                       _StatsRow(state: riyaz),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
+                      const _ModeToggle(),
+                      const SizedBox(height: 6),
                       Expanded(
                         child: Center(
                           child: _PitchVisualization(ringSize: ringSize),
@@ -299,9 +307,18 @@ class _PitchVisualization extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pitch = ref.watch(latestPitchProvider);
     final riyaz = ref.watch(riyazControllerProvider);
+    final mode = ref.watch(riyazDisplayModeProvider);
+    final stableMidi = ref.watch(stableMidiProvider);
 
     final voiced = pitch?.isVoiced ?? false;
     final cents = voiced ? pitch!.cents : 0.0;
+
+    if (mode == RiyazDisplayMode.piano) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: PianoKeyboard(activeMidi: stableMidi),
+      );
+    }
 
     return PitchRing(
       cents: cents,
@@ -309,6 +326,83 @@ class _PitchVisualization extends ConsumerWidget {
       stable: riyaz.isStable,
       size: ringSize,
       center: const SwaraDisplay(),
+    );
+  }
+}
+
+class _ModeToggle extends ConsumerWidget {
+  const _ModeToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(riyazDisplayModeProvider);
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Row(
+        children: [
+          _ModeChip(
+            label: 'Swara mode',
+            selected: mode == RiyazDisplayMode.swara,
+            onTap: () => ref
+                .read(riyazDisplayModeProvider.notifier)
+                .state = RiyazDisplayMode.swara,
+          ),
+          _ModeChip(
+            label: 'Piano mode',
+            selected: mode == RiyazDisplayMode.piano,
+            onTap: () => ref
+                .read(riyazDisplayModeProvider.notifier)
+                .state = RiyazDisplayMode.piano,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModeChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ModeChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.gold : Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w600,
+                color: selected
+                    ? const Color(0xFF1B1300)
+                    : AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
