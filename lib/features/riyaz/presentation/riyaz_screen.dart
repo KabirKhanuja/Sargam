@@ -11,6 +11,7 @@ import '../../pitch/presentation/pitch_track_bar.dart';
 import '../../swara/presentation/swara_display.dart';
 import '../../swara/presentation/swara_provider.dart';
 import '../../tanpura/presentation/tanpura_controls.dart';
+import '../../metronome/presentation/metronome_pill.dart';
 import 'widgets/piano_keyboard.dart';
 import 'riyaz_provider.dart';
 
@@ -82,9 +83,11 @@ class RiyazScreen extends ConsumerWidget {
                     children: [
                       Expanded(flex: 2, child: TanpuraControls()),
                       const SizedBox(width: 10),
-                      Expanded(flex: 2, child: _ScalePill()),
+                      Expanded(flex: 2, child: MetronomePill()),
                     ],
                   ),
+                  const SizedBox(height: 10),
+                  const _ScalePill(),
                   const SizedBox(height: 14),
                   _PrimaryAction(
                     isRunning: riyaz.session.isRunning,
@@ -116,6 +119,7 @@ class _ScalePill extends ConsumerWidget {
 
     return SizedBox(
       height: pillHeight,
+      width: double.infinity,
       child: OutlinedButton(
         onPressed: () => _showSaPicker(context),
         style: OutlinedButton.styleFrom(
@@ -130,7 +134,8 @@ class _ScalePill extends ConsumerWidget {
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
               'Sa',
@@ -335,7 +340,7 @@ class _PitchVisualization extends ConsumerWidget {
 
     if (mode == RiyazDisplayMode.piano) {
       return Container(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
         decoration: BoxDecoration(
           color: AppColors.surfaceHigh,
           borderRadius: BorderRadius.circular(16),
@@ -344,15 +349,6 @@ class _PitchVisualization extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Piano mode',
-              style: TextStyle(
-                fontSize: 11,
-                letterSpacing: 2,
-                color: AppColors.textMuted,
-              ),
-            ),
-            const SizedBox(height: 8),
             SizedBox(
               height: ringSize * 0.7,
               child: PianoKeyboard(activeMidi: stableMidi),
