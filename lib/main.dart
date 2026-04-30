@@ -4,16 +4,25 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'app/app.dart';
 import 'core/constants/app_colors.dart';
+import 'firebase_options.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Replace the default red error screen with a quiet fallback. We log to
-  // console in debug; in release we silently render a calm placeholder so the
-  // user never sees a stack trace.
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e, st) {
+    debugPrint('Firebase init failed: $e\n$st');
+  }
+
+  // i replaced the the default red error screen a log on console
+
   ErrorWidget.builder = (FlutterErrorDetails details) {
     if (kDebugMode) {
       FlutterError.presentError(details);

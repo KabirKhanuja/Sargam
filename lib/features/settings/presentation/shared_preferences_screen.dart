@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../practice/presentation/practice_provider.dart';
 import 'settings_provider.dart';
 
 class SharedPreferencesScreen extends ConsumerWidget {
@@ -128,9 +130,13 @@ class SharedPreferencesScreen extends ConsumerWidget {
                 children: [
                   ListTile(
                     title: const Text('Log out'),
-                    subtitle: const Text('Clears stored shared preferences'),
+                    subtitle: const Text('Signs out and clears local data'),
                     leading: const Icon(Icons.logout),
                     onTap: () async {
+                      await FirebaseAuth.instance.signOut();
+                      await ref
+                          .read(practiceControllerProvider.notifier)
+                          .clearAll();
                       await ref
                           .read(settingsControllerProvider.notifier)
                           .logoutAndClear();
