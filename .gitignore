@@ -84,5 +84,10 @@ Thumbs.db
 # VS Code 
 .vscode/launch.json
 
-# google-services.json
+# Firebase configuration and secrets
 /android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+firebase_options.dart
+
