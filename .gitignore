@@ -83,3 +83,6 @@ Thumbs.db
 
 # VS Code 
 .vscode/launch.json
+
+# google-services.json
+/android/app/google-services.json
