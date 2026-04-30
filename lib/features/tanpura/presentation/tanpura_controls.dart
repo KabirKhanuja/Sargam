@@ -12,6 +12,9 @@ class TanpuraControls extends ConsumerWidget {
     final state = ref.watch(tanpuraControllerProvider);
     final controller = ref.read(tanpuraControllerProvider.notifier);
 
+    // Keep height aligned with the Sa/Scale pill.
+    const pillHeight = kMinInteractiveDimension + 6;
+
     Future<void> handleToggle() async {
       try {
         final showReminder = await controller.requestPlay();
@@ -27,43 +30,50 @@ class TanpuraControls extends ConsumerWidget {
       }
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: handleToggle,
-            icon: Icon(
-              state.isPlaying ? Icons.pause_circle : Icons.play_circle,
-              color: state.isPlaying ? AppColors.gold : AppColors.textSecondary,
-              size: 24,
-            ),
-            visualDensity: VisualDensity.compact,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-          ),
-          Expanded(
-            child: SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                trackHeight: 1.6,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
-                overlayShape: SliderComponentShape.noOverlay,
-                activeTrackColor: AppColors.goldSoft,
-                inactiveTrackColor: AppColors.divider,
-                thumbColor: AppColors.gold,
+    return SizedBox(
+      height: pillHeight,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: AppColors.divider),
+        ),
+        child: Row(
+          children: [
+            IconButton(
+              onPressed: handleToggle,
+              icon: Icon(
+                state.isPlaying ? Icons.pause_circle : Icons.play_circle,
+                color: state.isPlaying
+                    ? AppColors.gold
+                    : AppColors.textSecondary,
+                size: 24,
               ),
-              child: Slider(
-                value: state.volume,
-                onChanged: controller.setVolume,
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            ),
+            Expanded(
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 1.6,
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 5,
+                  ),
+                  overlayShape: SliderComponentShape.noOverlay,
+                  activeTrackColor: AppColors.goldSoft,
+                  inactiveTrackColor: AppColors.divider,
+                  thumbColor: AppColors.gold,
+                ),
+                child: Slider(
+                  value: state.volume,
+                  onChanged: controller.setVolume,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

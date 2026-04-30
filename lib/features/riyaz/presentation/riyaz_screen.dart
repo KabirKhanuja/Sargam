@@ -110,44 +110,53 @@ class _ScalePill extends ConsumerWidget {
     final scale = ref.watch(scaleConfigProvider);
     final saName = MusicConstants.westernNotesSharp[scale.saPitchClass];
 
-    return OutlinedButton(
-      onPressed: () => _showSaPicker(context),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.gold,
-        side: const BorderSide(color: AppColors.divider),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        minimumSize: const Size(0, 0),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Sa',
-            style: TextStyle(
-              fontSize: 11,
-              letterSpacing: 1.2,
+    // Keep height aligned with `TanpuraControls` (Slider has a 48dp minimum
+    // touch target, plus 3dp top/bottom padding on the pill container).
+    const pillHeight = kMinInteractiveDimension + 6;
+
+    return SizedBox(
+      height: pillHeight,
+      child: OutlinedButton(
+        onPressed: () => _showSaPicker(context),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: AppColors.surface,
+          foregroundColor: AppColors.gold,
+          side: const BorderSide(color: AppColors.divider),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          minimumSize: const Size(0, 0),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Sa',
+              style: TextStyle(
+                fontSize: 11,
+                letterSpacing: 1.2,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              saName,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.9,
+                color: AppColors.gold,
+              ),
+            ),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 18,
               color: AppColors.textSecondary,
             ),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            saName,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.9,
-              color: AppColors.gold,
-            ),
-          ),
-          const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            size: 18,
-            color: AppColors.textSecondary,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -549,8 +558,11 @@ class _MicErrorBanner extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.mic_off_rounded,
-                  size: 18, color: AppColors.offPitch),
+              const Icon(
+                Icons.mic_off_rounded,
+                size: 18,
+                color: AppColors.offPitch,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
