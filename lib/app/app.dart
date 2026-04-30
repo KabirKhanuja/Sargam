@@ -17,8 +17,6 @@ class SargamApp extends ConsumerWidget {
       title: 'Sargam',
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
-      // We don't have a custom light palette yet; use the default M3 light
-      // scheme seeded from our gold.
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: AppColors.gold,

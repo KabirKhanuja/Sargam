@@ -10,10 +10,6 @@ import '../../swara/domain/swara_model.dart';
 import '../../swara/presentation/swara_provider.dart';
 import 'pitch_provider.dart';
 
-/// Horizontal chromatic strip showing one octave from Sa.
-/// A red vertical cursor tracks the actual pitch position in real time so
-/// the user can see *exactly* why the discrete swara is what it is — and
-/// where they are between notes.
 class PitchTrackBar extends ConsumerWidget {
   final double height;
   const PitchTrackBar({super.key, this.height = 92});
@@ -54,11 +50,7 @@ class PitchTrackBar extends ConsumerWidget {
     );
   }
 
-  static double? _cursorPosition(
-    double? hz,
-    ScaleConfig scale,
-    double width,
-  ) {
+  static double? _cursorPosition(double? hz, ScaleConfig scale, double width) {
     if (hz == null || hz <= 0 || !hz.isFinite) return null;
     final saHz = PitchUtils.hzFromMidi(scale.saMidi.toDouble());
     if (saHz <= 0) return null;
@@ -97,15 +89,12 @@ class _ScaleCells extends StatelessWidget {
               color: active
                   ? AppColors.gold.withValues(alpha: 0.18)
                   : (isAccidental
-                      ? AppColors.surfaceHigh.withValues(alpha: 0.4)
-                      : null),
+                        ? AppColors.surfaceHigh.withValues(alpha: 0.4)
+                        : null),
               border: Border(
                 left: i == 0
                     ? BorderSide.none
-                    : const BorderSide(
-                        color: AppColors.divider,
-                        width: 0.5,
-                      ),
+                    : const BorderSide(color: AppColors.divider, width: 0.5),
               ),
             ),
             child: Column(
@@ -121,8 +110,8 @@ class _ScaleCells extends StatelessWidget {
                       color: isSa
                           ? AppColors.gold
                           : (isAccidental
-                              ? AppColors.textMuted
-                              : AppColors.textPrimary),
+                                ? AppColors.textMuted
+                                : AppColors.textPrimary),
                     ),
                   ),
                 ),
@@ -163,12 +152,7 @@ class _Cursor extends StatelessWidget {
         width: 2,
         decoration: const BoxDecoration(
           color: AppColors.offPitch,
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x66E57373),
-              blurRadius: 6,
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Color(0x66E57373), blurRadius: 6)],
         ),
       ),
     );

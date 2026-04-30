@@ -1,9 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-/// Generates a tiny mono 16-bit PCM WAV click.
-///
-/// This avoids bundling external audio assets and works across platforms.
+// this generates a tiny mono WAV click
 Uint8List buildMetronomeClickWav({
   int sampleRate = 44100,
   int durationMs = 18,
@@ -12,7 +10,6 @@ Uint8List buildMetronomeClickWav({
   final nSamples = (sampleRate * (durationMs / 1000.0)).round();
   final pcm = Int16List(nSamples);
 
-  // Short sine burst with exponential decay.
   for (var i = 0; i < nSamples; i++) {
     final t = i / sampleRate;
     final env = math.exp(-t * 120.0);
@@ -24,7 +21,7 @@ Uint8List buildMetronomeClickWav({
   final pcmBytes = pcm.buffer.asUint8List();
   final dataLength = pcmBytes.length;
 
-  // WAV header (44 bytes).
+  // WAV header
   final header = ByteData(44);
   void writeString(int offset, String s) {
     for (var i = 0; i < s.length; i++) {

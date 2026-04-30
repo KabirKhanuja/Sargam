@@ -4,13 +4,6 @@ import 'dart:math' as math;
 import '../../../core/utils/pitch_utils.dart';
 import '../domain/pitch_model.dart';
 
-/// Streams pitch readings at ~30 Hz.
-///
-/// Real mic integration (FFT/YIN over a `flutter_audio_capture` or `record`
-/// stream) plugs in behind this interface. The current implementation is a
-/// demo source that walks through a swara phrase so the rest of the app
-/// (UI, providers, session, stability) can be exercised end-to-end without
-/// the platform deps in place yet.
 abstract class PitchDetectorService {
   Stream<PitchReading> get stream;
   Future<void> start();
@@ -56,20 +49,18 @@ class DemoPitchDetectorService implements PitchDetectorService {
     _tick++;
     final now = DateTime.now();
 
-    // Brief silence gaps so "voiced" detection can flip off and on.
     final secs = _tick * _tickMs / 1000.0;
     if ((secs % 9) > 7.5) {
       _controller.add(PitchReading.silent(now));
       return;
     }
 
-    // Walk an ascending swara phrase (Sa Re Ga Ma Pa Dha Ni Sa') in C.
+    // Walk an ascending swara phrase (Sa Re Ga Ma Pa Dha Ni Sa') in C
     const phrase = [60, 62, 64, 65, 67, 69, 71, 72];
     final stepIndex = (_tick ~/ 30) % phrase.length;
     final targetMidi = phrase[stepIndex];
     final targetHz = PitchUtils.hzFromMidi(targetMidi.toDouble());
 
-    // Add small drift in cents to simulate human pitch variation.
     final driftCents = math.sin(secs * 2.4) * 6 + (_rng.nextDouble() - 0.5) * 4;
     final hz = targetHz * math.pow(2, driftCents / 1200.0).toDouble();
 
@@ -78,11 +69,12 @@ class DemoPitchDetectorService implements PitchDetectorService {
       return;
     }
 
-    _controller.add(PitchReading(
-      hz: hz,
-      confidence: 0.85 + _rng.nextDouble() * 0.1,
-      timestamp: now,
-    ));
+    _controller.add(
+      PitchReading(
+        hz: hz,
+        confidence: 0.85 + _rng.nextDouble() * 0.1,
+        timestamp: now,
+      ),
+    );
   }
-
 }

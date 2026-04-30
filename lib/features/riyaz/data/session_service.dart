@@ -4,8 +4,6 @@ import '../../../core/constants/music_constants.dart';
 import '../../../core/utils/math_utils.dart';
 import '../../pitch/domain/pitch_model.dart';
 
-/// Rolling-window pitch stability detector. Uses cents-from-nearest-semitone
-/// so legitimate vibrato around a target note still reads as stable.
 class StabilityDetector {
   final int windowSize;
   final double centsThreshold;

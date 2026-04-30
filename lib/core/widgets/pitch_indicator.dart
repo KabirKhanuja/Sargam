@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/music_constants.dart';
 
-/// Circular ring with a tick that swings between -50 and +50 cents.
-/// A subtle inner glow appears when [stable] is true.
+// circular ring with a tick that swings between -50 and +50
+// a subtle inner glow appears when [stable] is true
 class PitchRing extends StatelessWidget {
   final double cents;
   final bool voiced;
@@ -62,7 +62,7 @@ class _PitchRingPainter extends CustomPainter {
       ..strokeWidth = 6;
     canvas.drawCircle(center, radius, basePaint);
 
-    // Tick marks every 25 cents.
+    // Tick marks every 25 cents
     final tickPaint = Paint()
       ..color = AppColors.divider
       ..strokeWidth = 1.5;
@@ -97,7 +97,7 @@ class _PitchRingPainter extends CustomPainter {
       canvas.drawCircle(center, radius, glow);
     }
 
-    // Arc from -90 (top) sweeping toward the tick.
+    // Arc from -90  sweeping toward the tick
     final arcPaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
@@ -113,7 +113,6 @@ class _PitchRingPainter extends CustomPainter {
       arcPaint,
     );
 
-    // Tip dot.
     final tip = Offset(
       center.dx + math.cos(angle) * radius,
       center.dy + math.sin(angle) * radius,

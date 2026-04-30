@@ -15,46 +15,22 @@ class MicPermissionDeniedException implements Exception {
   String toString() => 'Microphone permission denied';
 }
 
-/// Mic-backed pitch detection.
-///
-/// Pulls 16-bit little-endian PCM at 44.1 kHz from `record`, slices it into
-/// 2048-sample frames, and runs YIN (`pitch_detector_dart`) per frame.
-/// Emits one [PitchReading] per frame (~21.5 Hz).
 class MicPitchDetectorService implements PitchDetectorService {
   static const int _sampleRate = 44100;
   static const int _bufferSize = 2048;
   static const int _bytesPerBuffer = _bufferSize * 2; // PCM16 = 2 bytes/sample
   static const int _hzSmoothingWindow = 3;
 
-  /// If we momentarily lose confidence (or YIN fails) but the user is still
-  /// producing sound (RMS above threshold), keep showing the last locked note
-  /// for this long to avoid "note disappears" flicker.
   static const Duration _voicedHold = Duration(milliseconds: 900);
 
-  /// When switching notes, YIN can jump to a harmonic (×2/÷2/×3/÷3). We
-  /// continuously pick the harmonic-corrected candidate closest to the last
-  /// locked pitch.
   static const double _maxJumpSemitonesIfNotConfident = 9.0;
   static const double _jumpGuardMinConfidence = 0.92;
 
-  /// Below this RMS the frame is treated as silence — gates background noise.
-  /// Tuned to register quiet humming/soft singing while still rejecting room
-  /// hum and breath noise.
   static const double _rmsSilenceThreshold = 0.003;
 
-  /// YIN probability below this is considered an unreliable detection.
-  /// Kept loose because soft singing and onsets often land in the 0.5–0.7
-  /// band; the harmonic-correction + voiced-hold layers above clean up the
-  /// rest. Anything still flaky is caught by the stable-midi notifier.
   static const double _confidenceFloor = 0.45;
 
-  /// When we have no prior locked pitch, we still need to "seed" a first note.
-  /// Many voices start with a low-probability frame (especially on web).
   static const double _seedConfidenceFloor = 0.30;
-
-  /// If the detected pitch is within this distance (in semitones) of the last
-  /// locked pitch, accept it even if YIN probability dips. This prevents the
-  /// UI from blanking mid-sustain.
   static const double _nearbySemitoneAccept = 1.6;
 
   final _controller = StreamController<PitchReading>.broadcast();
@@ -91,11 +67,8 @@ class MicPitchDetectorService implements PitchDetectorService {
         encoder: AudioEncoder.pcm16bits,
         sampleRate: _sampleRate,
         numChannels: 1,
-        // Disable processing that can introduce harmonics/pitch-doubling.
         echoCancel: false,
         noiseSuppress: false,
-        // Boost soft input so quiet humming still hits the YIN floor without
-        // the user having to lean into the mic.
         autoGain: true,
       ),
     );
@@ -132,8 +105,6 @@ class MicPitchDetectorService implements PitchDetectorService {
     try {
       final floats = _pcm16LeToFloat(frameBytes);
       final now = DateTime.now();
-
-      // Silence/background-noise gate before running YIN.
       final rms = _rms(floats);
       if (rms < _rmsSilenceThreshold) {
         _lastVoicedAt = null;
@@ -156,8 +127,6 @@ class MicPitchDetectorService implements PitchDetectorService {
         return;
       }
 
-      // If we don't have a prior pitch yet, allow a looser "seed" so the UI
-      // starts showing a note quickly.
       if (_lastLockedHz == null) {
         if (result.probability >= _seedConfidenceFloor) {
           final hz = _smoothHz(rawHz);
@@ -178,8 +147,6 @@ class MicPitchDetectorService implements PitchDetectorService {
         return;
       }
 
-      // With an existing lock: accept low-confidence frames if they are still
-      // consistent with the last pitch; otherwise hold.
       if (result.probability < _confidenceFloor) {
         final candidate = _correctHarmonics(rawHz, referenceHz: _lastLockedHz!);
         final delta = _semitoneDelta(candidate, _lastLockedHz!).abs();
@@ -221,13 +188,10 @@ class MicPitchDetectorService implements PitchDetectorService {
         PitchReading(hz: hz, confidence: result.probability, timestamp: now),
       );
     } catch (e, st) {
-      // Swallow YIN/buffer errors instead of forwarding them to the UI —
-      // a single bad frame must never raise a red error screen.
       if (!_controller.isClosed) {
         _controller.add(_maybeHoldLastPitch(DateTime.now()));
       }
       assert(() {
-        // ignore: avoid_print
         print('pitch frame error: $e\n$st');
         return true;
       }());
@@ -301,11 +265,6 @@ class MicPitchDetectorService implements PitchDetectorService {
       _recentVoicedHz.removeAt(0);
     }
 
-    // Median over a small window rejects single-frame outliers (octave
-    // glitches, transient noise spikes) without introducing the perceptible
-    // lag of an IIR low-pass. The downstream `stableMidiProvider` adds the
-    // final layer of anti-flicker for the discrete-note display, so we don't
-    // need to over-smooth here.
     final window = List<double>.from(_recentVoicedHz)..sort();
     return window[window.length ~/ 2];
   }

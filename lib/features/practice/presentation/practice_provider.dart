@@ -53,7 +53,6 @@ class PracticeController extends AsyncNotifier<PracticeState> {
     final repo = await ref.read(practiceRepositoryProvider.future);
     await repo.addSession(summary);
 
-    // Reload daily totals so pruning + aggregation is reflected.
     final nextDaily = await repo.loadDailyEffectiveSeconds();
     final nextSessions = await repo.loadSessions();
     state = AsyncData(

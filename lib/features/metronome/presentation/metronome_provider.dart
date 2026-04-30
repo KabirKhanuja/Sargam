@@ -75,7 +75,6 @@ class MetronomeController extends Notifier<MetronomeState> {
     final clock = _clock;
     if (clock == null) return;
 
-    // Tick right now.
     unawaited(_playClick());
 
     final intervalMicros = (60 * 1000 * 1000 / state.bpm).round();
@@ -92,12 +91,8 @@ class MetronomeController extends Notifier<MetronomeState> {
     final player = _player;
     if (player == null) return;
     try {
-      // User gesture requirement: start() is triggered by a tap, so web audio
-      // should be unlocked by the time we get here.
       await player.play(BytesSource(_clickWav), volume: state.volume);
-    } catch (_) {
-      // If the platform blocks audio (e.g., web without gesture), don't crash.
-    }
+    } catch (_) {}
   }
 
   Future<void> _dispose() async {
