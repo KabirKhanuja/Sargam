@@ -69,30 +69,56 @@ class TanpuraControls extends ConsumerWidget {
   }
 
   void _showHeadphonesReminder(BuildContext context) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.surfaceHigh,
-        duration: const Duration(seconds: 4),
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: BorderSide(color: AppColors.gold.withValues(alpha: 0.4)),
-        ),
-        content: Row(
-          children: const [
-            Icon(Icons.headphones, color: AppColors.gold, size: 22),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Use headphones or earphones for the best tanpura experience.',
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
-              ),
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: AppColors.surfaceHigh,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: BorderSide(color: AppColors.gold.withValues(alpha: 0.35)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.headphones, color: AppColors.gold, size: 28),
+                const SizedBox(height: 10),
+                const Text(
+                  'Use headphones or earphones\nfor the best tanpura experience.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.gold,
+                      foregroundColor: const Color(0xFF1B1300),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    child: const Text(
+                      'Got it',
+                      style: TextStyle(letterSpacing: 0.8),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
