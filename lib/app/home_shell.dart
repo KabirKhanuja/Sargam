@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../features/goals/presentation/goals_screen.dart';
 import '../features/riyaz/presentation/riyaz_screen.dart';
 import '../features/settings/presentation/shared_preferences_screen.dart';
 
@@ -17,8 +18,8 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     final pages = <Widget>[
       const RiyazScreen(),
+      const GoalsScreen(),
       const SharedPreferencesScreen(),
-      const _AboutScreen(),
     ];
 
     return Scaffold(
@@ -29,31 +30,14 @@ class _HomeShellState extends State<HomeShell> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.graphic_eq), label: 'Riyaz'),
           NavigationDestination(
-            icon: Icon(Icons.settings),
-            label: 'Shared Prefs',
+            icon: Icon(Icons.calendar_month_outlined),
+            label: 'Goals',
           ),
-          NavigationDestination(icon: Icon(Icons.info_outline), label: 'About'),
+          NavigationDestination(
+            icon: Icon(Icons.settings_outlined),
+            label: 'Settings',
+          ),
         ],
-      ),
-    );
-  }
-}
-
-class _AboutScreen extends StatelessWidget {
-  const _AboutScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('About')),
-      body: const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'Sargam\n\nRiyaz + pitch monitor.',
-            textAlign: TextAlign.center,
-          ),
-        ),
       ),
     );
   }

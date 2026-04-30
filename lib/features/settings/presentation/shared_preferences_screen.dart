@@ -12,7 +12,7 @@ class SharedPreferencesScreen extends ConsumerWidget {
     final settingsAsync = ref.watch(settingsControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Shared Preferences')),
+      appBar: AppBar(title: const Text('Settings')),
       body: settingsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
@@ -64,8 +64,7 @@ class SharedPreferencesScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               _SectionCard(
                 title: 'Preferences (stored)',
-                subtitle:
-                    'These are demo app settings persisted via shared_preferences.',
+                subtitle: 'Saved locally on this device.',
                 children: [
                   SwitchListTile(
                     title: const Text('Haptics'),
@@ -76,27 +75,6 @@ class SharedPreferencesScreen extends ConsumerWidget {
                           .read(settingsControllerProvider.notifier)
                           .setSettings(settings.copyWith(hapticsEnabled: v));
                     },
-                  ),
-                  ListTile(
-                    title: const Text('Daily goal'),
-                    subtitle: Text('${settings.dailyGoalMinutes} minutes'),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
-                    child: Slider(
-                      value: settings.dailyGoalMinutes.toDouble(),
-                      min: 5,
-                      max: 60,
-                      divisions: 11,
-                      label: '${settings.dailyGoalMinutes} min',
-                      onChanged: (v) {
-                        ref
-                            .read(settingsControllerProvider.notifier)
-                            .setSettings(
-                              settings.copyWith(dailyGoalMinutes: v.round()),
-                            );
-                      },
-                    ),
                   ),
                   ListTile(
                     title: const Text('Tanpura volume (default)'),

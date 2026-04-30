@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,11 +10,14 @@ import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/pitch_indicator.dart';
 import '../../pitch/presentation/pitch_provider.dart';
 import '../../pitch/presentation/pitch_track_bar.dart';
+import '../../practice/domain/practice_session_summary.dart';
+import '../../practice/presentation/practice_provider.dart';
 import '../../swara/presentation/swara_display.dart';
 import '../../swara/presentation/swara_provider.dart';
 import '../../tanpura/presentation/tanpura_controls.dart';
 import '../../metronome/presentation/metronome_pill.dart';
 import 'widgets/piano_keyboard.dart';
+import '../domain/session_model.dart';
 import 'riyaz_provider.dart';
 
 enum RiyazDisplayMode { swara, piano }
@@ -34,6 +39,42 @@ class RiyazScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<RiyazState>(riyazControllerProvider, (prev, next) {
+      final prevState = prev?.session.state;
+      final nextState = next.session.state;
+      if (prevState == SessionState.running &&
+          nextState == SessionState.ended) {
+        final endedAt = next.session.endedAt;
+        if (endedAt == null) return;
+
+        final scale = ref.read(scaleConfigProvider);
+        final saName = MusicConstants.westernNotesSharp[scale.saPitchClass];
+
+        final summary = PracticeSessionSummary(
+          startedAt: next.session.startedAt,
+          endedAt: endedAt,
+          totalSeconds: next.session.totalDuration.inSeconds,
+          effectiveSeconds: next.session.effectiveDuration.inSeconds,
+          saPitchClass: scale.saPitchClass,
+        );
+
+        // Persist locally for Goals/heatmap.
+        unawaited(
+          ref.read(practiceControllerProvider.notifier).addSession(summary),
+        );
+
+        // Show summary popup.
+        unawaited(
+          _showSessionSummaryDialog(
+            context,
+            saName: saName,
+            total: next.session.totalDuration,
+            effective: next.session.effectiveDuration,
+          ),
+        );
+      }
+    });
+
     final riyaz = ref.watch(riyazControllerProvider);
     final controller = ref.read(riyazControllerProvider.notifier);
 
@@ -101,6 +142,124 @@ class RiyazScreen extends ConsumerWidget {
           },
         ),
       ),
+    );
+  }
+}
+
+Future<void> _showSessionSummaryDialog(
+  BuildContext context, {
+  required String saName,
+  required Duration total,
+  required Duration effective,
+}) async {
+  if (!context.mounted) return;
+
+  final pct = total.inMilliseconds == 0
+      ? 0
+      : ((effective.inMilliseconds / total.inMilliseconds) * 100).round();
+
+  await showDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    builder: (ctx) {
+      return Dialog(
+        backgroundColor: AppColors.surfaceHigh,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.divider),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Center(
+                child: Text(
+                  'SESSION SUMMARY',
+                  style: TextStyle(
+                    fontSize: 12,
+                    letterSpacing: 2,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _SummaryRow(
+                label: 'Practiced in this pitch',
+                value: 'Sa = $saName',
+                highlight: true,
+              ),
+              const SizedBox(height: 10),
+              _SummaryRow(
+                label: 'Time',
+                value: TimeUtils.formatDuration(total),
+              ),
+              const SizedBox(height: 8),
+              _SummaryRow(
+                label: 'Effective time',
+                value: '${TimeUtils.formatDuration(effective)}  ($pct%)',
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: TextButton.styleFrom(foregroundColor: AppColors.gold),
+                  child: const Text('Done'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class _SummaryRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool highlight;
+
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.highlight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              height: 1.25,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          flex: 2,
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.25,
+              fontWeight: FontWeight.w600,
+              color: highlight ? AppColors.gold : AppColors.textPrimary,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
